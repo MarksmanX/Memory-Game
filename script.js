@@ -1,67 +1,121 @@
 const gameContainer = document.getElementById("game");
+var score = 0;
 
-const COLORS = [
-  "red",
-  "blue",
-  "green",
-  "orange",
-  "purple",
-  "red",
-  "blue",
-  "green",
-  "orange",
-  "purple"
+var cardList = [
+  "robinhood",
+  "alice",
+  "mickeymouse",
+  "elsa",
+  "stitch",
+  "peterpan",
+  "cinderella",
+  "belle",
+  "simba",
+  "morph"
 ];
 
-// here is a helper function to shuffle an array
+var cardSet;
+var board = [];
+var rows = 4;
+var columns = 5;
+
+var cardSelect1;
+var cardSelect2;
+
+window.onload = function() {
+  shuffle();
+  startgame();
+}
+
 // it returns the same array with values shuffled
-// it is based on an algorithm called Fisher Yates if you want ot research more
-function shuffle(array) {
-  let counter = array.length;
+// it is based on an algorithm called Fisher Yates if you want to research more
+function shuffle() {
+  //double each card
+  cardSet =cardList.concat(cardList);
+  let counter = cardSet.length;
 
-  // While there are elements in the array
-  while (counter > 0) {
-    // Pick a random index
-    let index = Math.floor(Math.random() * counter);
-
-    // Decrease counter by 1
-    counter--;
-
-    // And swap the last element with it
-    let temp = array[counter];
-    array[counter] = array[index];
-    array[index] = temp;
-  }
-
-  return array;
-}
-
-let shuffledColors = shuffle(COLORS);
-
-// this function loops over the array of colors
-// it creates a new div and gives it a class with the value of the color
-// it also adds an event listener for a click for each card
-function createDivsForColors(colorArray) {
-  for (let color of colorArray) {
-    // create a new div
-    const newDiv = document.createElement("div");
-
-    // give it a class attribute for the value we are looping over
-    newDiv.classList.add(color);
-
-    // call a function handleCardClick when a div is clicked on
-    newDiv.addEventListener("click", handleCardClick);
-
-    // append the div to the element with an id of game
-    gameContainer.append(newDiv);
+  //shuffle
+  for (let i = 0; i < counter; i++) {
+    let j = Math.floor(Math.random() * cardSet.length);
+    let temp = cardSet[i];
+    cardSet[i] = cardSet[j];
+    cardSet[j] = temp;
   }
 }
 
-// TODO: Implement this function!
-function handleCardClick(event) {
+function startgame() {
+  for (let r = 0; r < rows; r++) {
+    let row = [];
+    for (let c = 0; c < columns; c++) {
+      let cardImg = cardSet.pop();
+      row.push(cardImg);
+
+      //make an <img> tag and assign ids like "0-1"
+      let card = document.createElement("img");
+      card.id = r.toString() + "-" + c.toString();
+      card.src = cardImg + ".png";
+      card.classList.add("card");
+      card.addEventListener("click", selectCard);
+      gameContainer.appendChild(card);
+    }
+    board.push(row);
+  }
+  console.log(board);
+  hideCards();
+}
+
+//TODO: Write a start button function
+//document.getElementById("startbtn").addEventListener("click", startgame());
+
+function hideCards() {
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < columns; c++) {
+      let card = document.getElementById(r.toString() + "-" + c.toString());
+      card.src = "back.png";
+    }
+  }
+}
+
+function selectCard(event) {
   // you can use event.target to see which element was clicked
-  console.log("you just clicked", event.target);
+  if (this.src.includes("back")) {
+    if (!cardSelect1) {
+      cardSelect1 = this;
+
+      let coords = cardSelect1.id.split("-"); // 0-1 -> ["0", "1"]
+      let r = parseInt(coords[0]);
+      let c = parseInt(coords[1]);
+      cardSelect1.src = board[r][c] +".png";
+    }
+    else if (!cardSelect2 && this != cardSelect1) {
+      cardSelect2 = this;
+
+      let coords = cardSelect2.id.split("-"); // 0-1 -> ["0", "1"]
+      let r = parseInt(coords[0]);
+      let c = parseInt(coords[1]);
+
+      cardSelect2.src = board[r][c] + ".png";
+      if(cardSelect1.src != cardSelect2.src) {
+        setTimeout(noMatch, 1000);
+      }
+      else {
+        cardSelect1.style.opacity = "1.0";
+        cardSelect2.style.opacity = "1.0";
+        cardSelect1 = null;
+        cardSelect2 = null;
+        score++;
+        document.getElementById("score").innerText = score;
+      }
+    }
+  }
 }
 
-// when the DOM loads
-createDivsForColors(shuffledColors);
+function noMatch() {
+    cardSelect1.src = "back.png";
+    cardSelect2.src = "back.png";
+    score++;
+    document.getElementById("score").innerText = score;
+  cardSelect1 = null;
+  cardSelect2 = null;
+}
+
